@@ -1,0 +1,56 @@
+<idea-plugin>
+    <id>com.yuxiaoyao.jrebel.license.server</id>
+    <name>JRebel License Server</name>
+    <vendor url="https://github.com/qcxs/jrebel-license-server-idea-plugin">qcxs</vendor>
+
+    <description><![CDATA[
+        <p>在 IntelliJ IDEA 进程内运行 JRebel / XRebel 激活服务，随 IDE 启动与关闭，适合本机个人使用。</p>
+        <ul>
+            <li>内嵌 HTTP 服务，默认监听 127.0.0.1:12345，端口可在设置中修改。</li>
+            <li>提供 2018.1+ 激活地址（UUID）以及旧版 token 激活地址。</li>
+            <li>支持离线天数、工作模式、首页展示地址等配置。</li>
+            <li>保留 <code>/rpc/*</code> 旧版 Atlassian 协议接口。</li>
+            <li>状态栏显示运行状态，可复制激活地址、重启或停止服务。</li>
+        </ul>
+        <p>使用前需要在同一个 IDE 中安装官方 JRebel 插件，并把激活服务器地址设置为状态栏或设置页中显示的地址。</p>
+        <p>本项目为二改版本，原作者：<a href="https://github.com/yu-xiaoyao/jrebel-license-active-server">yu-xiaoyao</a>。</p>
+        <p>项目地址：<a href="https://github.com/qcxs/jrebel-license-server-idea-plugin">qcxs/jrebel-license-server-idea-plugin</a>。</p>
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <!-- 2023.3 之后 appLifecycleListener 扩展点已被移除，改用消息总线注册。 -->
+    <applicationListeners>
+        <listener class="com.yuxiaoyao.jrebel.license.startup.LicenseServerAppListener"
+                  topic="com.intellij.ide.AppLifecycleListener"/>
+    </applicationListeners>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationConfigurable
+                parentId="tools"
+                id="com.yuxiaoyao.jrebel.license.settings"
+                displayName="JRebel License Server"
+                instance="com.yuxiaoyao.jrebel.license.settings.LicenseServerConfigurable"/>
+
+        <statusBarWidgetFactory
+                id="JRebelLicenseServerStatus"
+                implementation="com.yuxiaoyao.jrebel.license.ui.LicenseServerStatusBarWidgetFactory"/>
+
+        <notificationGroup id="JRebelLicenseServer" displayType="BALLOON"/>
+    </extensions>
+
+    <actions>
+        <action id="JrebelLicenseServer.CopyActivationUrl"
+                class="com.yuxiaoyao.jrebel.license.action.CopyActivationUrlAction"
+                text="JRebel: 复制激活地址"
+                description="复制本机 JRebel 激活服务器地址">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+        <action id="JrebelLicenseServer.Toggle"
+                class="com.yuxiaoyao.jrebel.license.action.ToggleServerAction"
+                text="JRebel: 启动/停止激活服务"
+                description="启动或停止内嵌的 JRebel 激活服务器">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+    </actions>
+</idea-plugin>

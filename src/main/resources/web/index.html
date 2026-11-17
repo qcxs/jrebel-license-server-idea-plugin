@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JRebel License Server</title>
+    <style>
+        :root {
+            --primary-color: #4c00ff;
+            --primary-dark: #3900c4;
+            --secondary-color: #f6f4ff;
+            --accent-color: #ff5252;
+            --text-color: #2b2440;
+            --light-text: #6b6580;
+            --border-radius: 10px;
+            --box-shadow: 0 10px 30px rgba(35, 20, 80, 0.12);
+            --transition: all 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background: linear-gradient(135deg, #f7f5ff 0%, #e6e0ff 100%);
+            min-height: 100vh;
+            padding: clamp(10px, 3vw, 24px);
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: min(900px, 100%);
+            min-width: 0;
+            margin: clamp(12px, 4vw, 40px) auto;
+            background-color: #fff;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), #7a4aff);
+            color: white;
+            padding: clamp(18px, 4vw, 30px);
+        }
+
+        h1 {
+            font-size: clamp(20px, 4.5vw, 28px);
+            line-height: 1.3;
+        }
+
+        .content {
+            padding: clamp(14px, 4vw, 30px);
+        }
+
+        .info-card {
+            background-color: var(--secondary-color);
+            border-radius: var(--border-radius);
+            padding: clamp(14px, 3vw, 20px);
+            margin-bottom: clamp(12px, 2.5vw, 20px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .info-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-card h2 {
+            font-size: clamp(16px, 3.2vw, 20px);
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .info-card p {
+            color: var(--light-text);
+            margin-bottom: 10px;
+        }
+
+        .activation-url {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            min-width: 0;
+            background-color: white;
+            border: 1px solid #e3dcff;
+            border-radius: 4px;
+            padding: 10px 12px;
+            margin: 10px 0;
+            position: relative;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .activation-url:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 2px 10px rgba(76, 0, 255, 0.08);
+        }
+
+        .url-text {
+            flex: 1 1 240px;
+            min-width: 0;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: clamp(12px, 2.6vw, 14px);
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+
+        .highlight {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .copy-btn {
+            flex: 0 0 auto;
+            margin-left: auto;
+            padding: 8px 14px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            min-height: 38px;
+            transition: var(--transition);
+        }
+
+        .copy-btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .copy-btn.copied {
+            background-color: #22a06b;
+        }
+
+        footer {
+            text-align: center;
+            padding: clamp(14px, 3vw, 20px);
+            color: var(--light-text);
+            font-size: 14px;
+            border-top: 1px solid #eee;
+        }
+
+        footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translate(-50%, 10px);
+            max-width: calc(100% - 32px);
+            background-color: #2b2440;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-align: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 0.95;
+            visibility: visible;
+            transform: translate(-50%, 0);
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                margin: 0 auto;
+                border-radius: 8px;
+            }
+
+            .activation-url {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .url-text {
+                flex: 1 1 auto;
+            }
+
+            .copy-btn {
+                width: 100%;
+                margin-left: 0;
+            }
+        }
+
+        @media (max-width: 400px) {
+            h1 {
+                font-size: 18px;
+            }
+
+            .content {
+                padding: 12px;
+            }
+
+            .info-card {
+                padding: 12px;
+            }
+
+            footer {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>JRebel License Server</h1>
+    </header>
+
+    <div class="content">
+        <div class="info-card">
+            <h2>Server Information</h2>
+            <p>License Server started at:</p>
+            <div class="activation-url" onclick="copyToClipboard('{{HOST}}')">
+                <span class="url-text">{{HOST}}</span>
+                <button class="copy-btn" onclick="copyToClipboard(event, '{{HOST}}')">Copy</button>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <h2>JRebel 7.1 and Earlier Versions</h2>
+            <p>Activation address (with any email):</p>
+            <div class="activation-url" onclick="copyToClipboard('{{HOST}}/{tokenname}')">
+                <span class="url-text">{{HOST}}/<span class="highlight">{tokenname}</span></span>
+                <button class="copy-btn" onclick="copyToClipboard(event, '{{HOST}}/{tokenname}')">Copy</button>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <h2>JRebel 2018.1 and Later Versions</h2>
+            <p>Activation address (with any email address):</p>
+            <div class="activation-url" onclick="copyToClipboard('{{HOST}}/{{UUID}}')">
+                <span class="url-text">{{HOST}}/<span class="highlight">{{UUID}}</span></span>
+                <button class="copy-btn" onclick="copyToClipboard(event, '{{HOST}}/{{UUID}}')">Copy</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>
+            <a href="https://github.com/yu-xiaoyao/jrebel-license-active-server" target="_blank" rel="noopener">Developed from 2019
+                year</a>
+        </p>
+    </footer>
+</div>
+
+<div id="toast" class="toast">Copied to clipboard!</div>
+
+<script>
+    let toastTimer = null;
+
+    function copyToClipboard(event, text) {
+        let evt = event;
+        let value = text;
+
+        if (typeof text === 'undefined') {
+            value = event;
+            evt = null;
+        }
+
+        if (evt && evt.stopPropagation) {
+            evt.stopPropagation();
+        }
+        if (!value) {
+            return;
+        }
+
+        const textArea = document.createElement('textarea');
+        textArea.value = value;
+        textArea.setAttribute('readonly', '');
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.select();
+        textArea.setSelectionRange(0, 99999);
+
+        let copied = false;
+        try {
+            copied = document.execCommand('copy');
+        } catch (err) {
+            copied = false;
+        }
+        document.body.removeChild(textArea);
+
+        let button = null;
+        if (evt && evt.target && evt.target.tagName === 'BUTTON') {
+            button = evt.target;
+        } else if (evt && evt.target && evt.target.parentElement) {
+            button = evt.target.parentElement.querySelector('.copy-btn');
+        }
+
+        if (button) {
+            const originalText = button.textContent;
+            button.textContent = copied ? 'Copied!' : 'Failed';
+            button.classList.add('copied');
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.classList.remove('copied');
+            }, 1800);
+        }
+
+        const toast = document.getElementById('toast');
+        toast.textContent = copied ? 'Copied to clipboard!' : 'Copy failed, please copy manually.';
+        toast.className = 'toast show';
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+            toast.className = 'toast';
+        }, 2200);
+    }
+</script>
+
+</body>
+</html>

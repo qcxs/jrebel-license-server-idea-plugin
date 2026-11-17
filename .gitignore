@@ -1,0 +1,28 @@
+### Gradle ###
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+### IntelliJ Platform Gradle Plugin ###
+.intellijPlatform/
+
+### Kotlin ###
+.kotlin/
+out/
+
+### IntelliJ IDEA ###
+.idea/
+*.iml
+*.ipr
+*.iws
+local.properties
+
+### 构建与运行产物 ###
+*.hprof
+*.log
+logs/
+
+### 操作系统 ###
+.DS_Store
+Thumbs.db
+desktop.ini
