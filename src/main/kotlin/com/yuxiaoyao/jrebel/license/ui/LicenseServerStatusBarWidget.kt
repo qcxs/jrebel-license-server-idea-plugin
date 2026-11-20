@@ -2,10 +2,10 @@ package com.yuxiaoyao.jrebel.license.ui
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.components.service
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.wm.CustomStatusBarWidget
 import com.intellij.openapi.wm.StatusBar
 import com.intellij.openapi.wm.StatusBarWidget
@@ -30,6 +30,14 @@ class LicenseServerStatusBarWidgetFactory : StatusBarWidgetFactory {
     override fun isAvailable(project: Project): Boolean = true
 
     override fun createWidget(project: Project): StatusBarWidget = LicenseServerStatusBarWidget()
+
+    // 2021.3 起 disposeWidget 为抽象方法，新版平台已提供默认实现，显式覆写可同时兼容两版。
+    override fun disposeWidget(widget: StatusBarWidget) {
+        Disposer.dispose(widget)
+    }
+
+    // 旧版平台要求实现，新版平台已提供默认实现。
+    override fun canBeEnabledOn(statusBar: StatusBar): Boolean = true
 }
 
 /**
@@ -37,7 +45,8 @@ class LicenseServerStatusBarWidgetFactory : StatusBarWidgetFactory {
  */
 class LicenseServerStatusBarWidget : CustomStatusBarWidget, Disposable {
 
-    private val server: LicenseServerService = service()
+    private val server: LicenseServerService =
+        ApplicationManager.getApplication().getService(LicenseServerService::class.java)
 
     private val label = JBLabel().apply {
         cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)

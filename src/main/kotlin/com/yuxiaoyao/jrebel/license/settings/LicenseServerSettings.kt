@@ -1,10 +1,10 @@
 package com.yuxiaoyao.jrebel.license.settings
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
-import com.intellij.openapi.components.service
 import java.util.UUID
 
 @Service(Service.Level.APP)
@@ -47,7 +47,8 @@ class LicenseServerSettings : PersistentStateComponent<LicenseServerSettings.Sta
         const val WORK_MODE_ONLINE = 2
         const val WORK_MODE_OLD_GUID = 3
 
-        fun getInstance(): LicenseServerSettings = service()
+        fun getInstance(): LicenseServerSettings =
+            ApplicationManager.getApplication().getService(LicenseServerSettings::class.java)
 
         fun isValidPort(port: Int): Boolean = port in 1..65535
     }

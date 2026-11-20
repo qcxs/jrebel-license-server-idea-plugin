@@ -3,7 +3,7 @@ package com.yuxiaoyao.jrebel.license.action
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.components.service
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.project.DumbAware
 import com.yuxiaoyao.jrebel.license.LicenseServerNotifications
@@ -15,7 +15,7 @@ class CopyActivationUrlAction : AnAction(), DumbAware {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     override fun actionPerformed(event: AnActionEvent) {
-        val server = service<LicenseServerService>()
+        val server = ApplicationManager.getApplication().getService(LicenseServerService::class.java)
         var status = server.status()
         if (!status.running) {
             status = server.start()

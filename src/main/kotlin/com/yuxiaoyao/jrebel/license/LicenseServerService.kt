@@ -2,7 +2,6 @@ package com.yuxiaoyao.jrebel.license
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.components.service
 import com.yuxiaoyao.jrebel.license.server.LicenseHttpServer
 import com.yuxiaoyao.jrebel.license.server.ServerConfig
 import com.yuxiaoyao.jrebel.license.settings.LicenseServerSettings
@@ -18,7 +17,7 @@ class LicenseServerService : Disposable {
     data class Status(val running: Boolean, val port: Int, val lastError: String?)
 
     private val settings: LicenseServerSettings
-        get() = service()
+        get() = LicenseServerSettings.getInstance()
 
     private val httpServer = LicenseHttpServer { buildConfig() }
     private val listeners = CopyOnWriteArrayList<(Status) -> Unit>()

@@ -45,17 +45,24 @@ jobs:
           fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
-      - name: Build plugin
+      - name: Build plugin (modern, 2022.3+)
         run: |
           chmod +x gradlew
           ./gradlew buildPlugin
+
+      - name: Build plugin (legacy, 2021.2–2022.2)
+        run: |
+          chmod +x gradlew
+          ./gradlew -p legacy buildPlugin
 
       - name: Upload artifact (test build)
         if: inputs.tag == ''
         uses: actions/upload-artifact@v4
         with:
           name: jrebel-license-server-plugin
-          path: build/distributions/*.zip
+          path: |
+            build/distributions/*.zip
+            legacy/build/distributions/*.zip
           if-no-files-found: error
 
       - name: Publish GitHub Release
@@ -64,10 +71,34 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ steps.tag.outputs.tag }}
         run: |
+          cat > "$RUNNER_TEMP/release-notes.md" <<'EOF'
+          ## 安装包选择
+
+          同一版本提供两个安装包，功能完全一致，只是兼容的 IDE 版本不同：
+
+          | 安装包 | 适配 IDE 版本 | 编译基线 / 字节码 |
+          | --- | --- | --- |
+          | `jrebel-license-server-idea-plugin-<version>.zip` | IntelliJ IDEA 2022.3（build 223）及以上 | 2023.3.4 / Java 17 |
+          | `jrebel-license-server-idea-plugin-legacy-<version>.zip` | IntelliJ IDEA 2021.2 – 2022.2（build 212–222.*） | 2021.3.3 / Java 11 |
+
+          ### 如何选择
+
+          - **IntelliJ IDEA 2022.3 及更新版本**：下载新版包（文件名中不含 `legacy`）。
+          - **IntelliJ IDEA 2021.2 – 2022.2**：下载 `legacy` 包。
+
+          ### 安装
+
+          1. `Settings` → `Plugins` → 齿轮菜单 → `Install Plugin from Disk...`
+          2. 选择对应 zip 并重启 IDE。
+          3. 使用前需在同一 IDE 中安装官方 JRebel 插件。
+
+          > 插件版本号固定用于界面显示；安装时不校验版本高低，允许直接覆盖已安装版本。
+          EOF
+
           # 已存在同名 release/tag 时覆盖：删除旧 release（含 tag）后重建。
           gh release delete "$TAG" --yes --cleanup-tag || true
           git tag -f "$TAG"
           git push -f origin "$TAG"
-          gh release create "$TAG" build/distributions/*.zip \
-            --title "$TAG" \
-            --generate-notes
+          gh release create "$TAG" build/distributions/*.zip legacy/build/distributions/*.zip \
+            --title "JRebel License Server $TAG" \
+            --notes-file "$RUNNER_TEMP/release-notes.md"

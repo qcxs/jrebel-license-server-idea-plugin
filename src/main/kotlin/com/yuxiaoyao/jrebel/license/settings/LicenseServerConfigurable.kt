@@ -1,7 +1,6 @@
 package com.yuxiaoyao.jrebel.license.settings
 
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.components.service
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.ui.ComboBox
@@ -25,10 +24,10 @@ import javax.swing.JPanel
 class LicenseServerConfigurable : Configurable {
 
     private val settings: LicenseServerSettings
-        get() = service()
+        get() = LicenseServerSettings.getInstance()
 
     private val server: LicenseServerService
-        get() = service()
+        get() = ApplicationManager.getApplication().getService(LicenseServerService::class.java)
 
     private val portField = JBTextField(8)
     private val offlineDaysField = JBTextField(8)

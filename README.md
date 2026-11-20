@@ -10,6 +10,26 @@
 
 > 本项目仅供本地开发、学习与个人便利使用，请勿用于商业用途。有条件请支持 JRebel / XRebel 正版授权。
 
+## 使用教程
+
+1、release下载插件包
+
+2、idea插件列表，选择从磁盘安装，安装后启用（可能需要重启idea）
+
+![image-20261120113302990](./assets/image-20261120113302990.png)
+
+3、“设置”-》“工具”-》“Jrebel License Server”，修改端口-》启动-》复制激活地址（勾选“随IDE启动激活服务”）
+
+![image-20261120113345291](./assets/image-20261120113345291.png)
+
+4、“设置”-》“JRebel & XRebel”，激活-》输入复制的激活地址（邮箱任意）—》同意条款-》确定
+
+![image-20261120113532659](./assets/image-20261120113532659.png)
+
+5、稍等半刻，激活完成
+
+![image-20261120113727441](./assets/image-20261120113727441.png)
+
 ## 功能特性
 
 - 内嵌 HTTP 服务，默认监听 `127.0.0.1:12345`，端口可在设置中修改
@@ -29,14 +49,14 @@
 1. **零部署**：安装插件即完成，无需下载可执行文件、配置开机自启或手动启动服务。
 2. **生命周期自然**：服务随 IDE 启动而启动、随 IDE 退出而关闭，不会残留后台进程或占用端口。
 3. **配置与状态统一**：端口、离线天数、工作模式等在 IDE 设置页中维护，状态栏和控制台日志统一在 IDE 内查看。
-4. **分发简单**：一个插件 zip 即可安装，无需区分操作系统与 CPU 架构（依赖 IDE 自带的 JBR 17+）。
+4. **分发简单**：按 IDE 版本提供两个插件 zip，均无需区分操作系统与 CPU 架构（旧版包依赖 JBR 11，新版包依赖 JBR 17+）。
 5. **地址稳定**：UUID 与端口持久化保存，激活地址在多次重启后保持不变。
 6. **安全边界清晰**：只绑定回环地址 `127.0.0.1`，不向局域网暴露。
 
 ### 缺点
 
 1. **强依赖 IDE**：IDE 未运行时服务不可用；IDE 卡顿、崩溃或重启会一并影响服务。
-2. **平台版本耦合**：依赖 IntelliJ Platform API（`sinceBuild=233`），IDE 大版本升级后可能需要适配。
+2. **平台版本耦合**：依赖 IntelliJ Platform API（旧版包 `sinceBuild=212`，新版包 `sinceBuild=223`），IDE 大版本升级后可能需要适配。
 3. **只能单机自用**：服务绑定回环地址，无法为团队、其他机器或 CI 提供激活，也不能远程访问。
 4. **端口冲突**：默认端口被占用时需要手动改端口；修改端口会短暂重启服务。
 5. **更新需随 IDE**：插件升级通常需要重启 IDE（或重新安装）才能生效，不如独立进程热替换方便。
@@ -46,10 +66,17 @@
 
 ## 环境要求
 
-- JDK 17（构建与运行均使用 Toolchain 17）
-- IntelliJ IDEA Community/Ultimate **2023.3（build 233）及以上**
-  - `sinceBuild = 233`，`untilBuild` 未设置上限，当前版本理论上兼容 2023.3 之后的所有正式版
-  - 构建与验证基线为 **2023.3.4**，更新版本尚未逐一验证，如遇平台 API 变更请以降级使用或自行适配
+项目同时发布两个产物，按 IDE 版本选择安装：
+
+| 产物 | 适配 IDE 版本 | 字节码 | 说明 |
+| --- | --- | --- | --- |
+| `jrebel-license-server-idea-plugin-legacy-<version>.zip` | **2021.2 – 2022.2**（build 212–222.*） | Java 11 | 编译基线 2021.3.3，面向运行在 JBR 11 上的旧版 IDE |
+| `jrebel-license-server-idea-plugin-<version>.zip` | **2022.3（build 223）及以上** | Java 17 | 编译基线 2023.3.4，使用现代动作线程 API |
+
+- 构建统一使用 JDK 17（Toolchain 17）
+- 两包均覆盖对应区间的所有正式版；新版包不设置 `untilBuild` 上限
+- 旧版包已在 **2021.2（IU-212.5080.55）**、**2021.3.3（IU-213.7172.25）** 上验证；新版包在 **2023.3.4** 上验证
+- 两个产物功能一致，仅编译基线、兼容区间、字节码版本与动作线程实现不同
 - 同一个 IDE 中需安装官方 JRebel 插件
 
 > 插件版本号固定为 `1.0.0`，仅用于界面显示，不代表发布版本；安装时不校验版本高低，允许低版本直接覆盖已安装的高版本。
@@ -57,25 +84,35 @@
 ## 构建
 
 ```bash
-# Windows
-.\gradlew.bat buildPlugin
+# 新版包（2022.3+，Java 17）
+.\gradlew.bat buildPlugin                 # Windows
+./gradlew buildPlugin                     # macOS / Linux
 
-# macOS / Linux
-./gradlew buildPlugin
+# 旧版包（2021.2–2022.2，Java 11，使用 Gradle IntelliJ Plugin 1.x + 2021.3.3 编译）
+.\gradlew.bat -p legacy buildPlugin       # Windows
+./gradlew -p legacy buildPlugin           # macOS / Linux
 ```
 
-产物位于 `build/distributions/jrebel-license-server-idea-plugin-<version>.zip`。
+Windows 下可直接运行 `build.bat`，一次构建两个版本。
+
+产物：
+
+- 新版：`build/distributions/jrebel-license-server-idea-plugin-<version>.zip`
+- 旧版：`legacy/build/distributions/jrebel-license-server-idea-plugin-legacy-<version>.zip`
 
 在沙箱 IDE 中调试运行：
 
 ```bash
-.\gradlew.bat runIde
+.\gradlew.bat runIde               # 新版（2023.3.4）
+.\gradlew.bat -p legacy runIde     # 旧版（2021.3.3）
 ```
+
+CI（`.github/workflows/build.yml`）会同时构建两个产物，并随 Release 一并发布。
 
 ## 安装
 
 1. 打开 IDE：`Settings` → `Plugins` → 齿轮菜单 → `Install Plugin from Disk...`
-2. 选择 `build/distributions/` 下打好的 zip
+2. 按上表选择对应产物：2021.2–2022.2 用 legacy 包，2022.3+ 用新版包
 3. 重启 IDE
 
 ## 使用
@@ -129,7 +166,6 @@ http://127.0.0.1:{port}/{uuid}
 src/main/kotlin/com/yuxiaoyao/jrebel/license/
 ├── LicenseServerService.kt        # 应用级服务，管理 HTTP 服务生命周期与状态监听
 ├── LicenseServerNotifications.kt  # 通知封装
-├── action/                        # Tools 菜单动作
 ├── server/                        # 内嵌 HTTP 服务、响应体、签名、首页渲染
 ├── settings/                      # 持久化配置与设置页
 ├── startup/                       # IDE 启动监听
@@ -138,6 +174,9 @@ src/main/resources/
 ├── META-INF/plugin.xml            # 插件声明
 ├── keys/                          # RSA 私钥
 └── web/index.html                 # 首页模板
+src/modern/kotlin/.../action/      # 新版动作（实现 ActionUpdateThread）
+src/legacy/kotlin/.../action/      # 旧版动作（不实现 ActionUpdateThread）
+legacy/                            # 旧版独立构建脚本
 ```
 
 ## 相关项目
